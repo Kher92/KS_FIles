@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+import io
 st.set_page_config(
     page_title="Probe",
     layout="wide",
@@ -29,9 +29,13 @@ cols = df.columns
 st.markdown("---")
 st.markdown("👨‍💻 Created by: Kher Sarakbi", unsafe_allow_html=True)
 
+output = io.BytesIO()
+df.to_excel(output, index=False, engine='openpyxl')
+output.seek(0)  # رجوع للبداية
+
 st.download_button(
-    label="⬇️ Download data as excel",
-    data=df.to_excel(index=False).encode("latin1"),
-    file_name=f"{excel_files}.xlsx",
-    mime="text/xlsx"
+    label="⬇️ Download data as Excel",
+    data=output,
+    file_name="data.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
