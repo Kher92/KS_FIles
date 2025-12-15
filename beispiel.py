@@ -3,7 +3,7 @@ import pandas as pd
 import io
 import os 
 st.set_page_config(
-    page_title="Probe",
+    page_title="Auszählung",
     layout="wide",
     page_icon="📊"
 )
@@ -43,3 +43,4 @@ st.download_button(
     file_name="data.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
