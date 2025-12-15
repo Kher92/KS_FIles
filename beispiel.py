@@ -7,13 +7,18 @@ st.set_page_config(
     page_icon="📊"
 )
 
-st.title("📊 Auftrag: 2025-11-25-133_KS_3521")
+# قائمة الملفات على GitHub
+excel_files = [
+    "https://github.com/Kher92/KS_FIles/blob/main/2025-11-24-127_KS_3521.xlsx",
+    "https://github.com/Kher92/KS_FIles/blob/main/2025-12-01-017_KS_3421.xlsx",
+    "https://github.com/Kher92/KS_FIles/blob/main/2025-12-02-035_KS_2390.xlsx"
+]
 
-file_path = "2025-11-25-133_KS_3521.xlsx"
-df = pd.read_excel(file_path)
+selected_file_url = st.selectbox("Wähle die Datei aus", excel_files)
+
+file_url = selected_file_url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
+df = pd.read_excel(file_url, engine="openpyxl")
 df = df.dropna()
-
-print(df)
 
 st.subheader("📋 Data Preview")
 st.write(df)
@@ -21,26 +26,12 @@ st.write(df)
 st.subheader("📈 Pivot Table Builder")
 cols = df.columns
 
-col1, col2, col3 = st.columns(3)
-print(f"columns1 is {col1}")
+st.markdown("---")
+st.markdown("👨‍💻 Created by: Kher Sarakbi", unsafe_allow_html=True)
 
-rows = col1.multiselect("Rows", cols)
-columns = col2.multiselect("Columns", cols)
-values = col3.selectbox("Values", cols)
-
-if rows and columns:
-    pivot = df.pivot_table(
-        index=rows,
-        columns=columns,
-        values=values,
-        aggfunc="count",
-        fill_value=0
-    )
-    st.dataframe(pivot)
-
-    export_btn = st.download_button(
-        label="⬇️ Download Pivot as Excel",
-        data=pivot.to_csv().encode("Ansi"),
-        file_name="pivot_export.csv",
-        mime="text/csv"
-    )
+st.download_button(
+    label="⬇️ Download Pivot as Excel",
+    data=df.to_csv().encode("Ansi"),
+    file_name="df.csv",
+    mime="text/csv"
+)
