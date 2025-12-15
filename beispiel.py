@@ -30,8 +30,8 @@ st.markdown("---")
 st.markdown("👨‍💻 Created by: Kher Sarakbi", unsafe_allow_html=True)
 
 st.download_button(
-    label="⬇️ Download Pivot as Excel",
-    data=df.to_csv().encode("Ansi"),
-    file_name="df.csv",
-    mime="text/csv"
+    label="⬇️ Download data as excel",
+    data=df.to_excel(index=False).encode("latin1"),
+    file_name=f"{excel_files}.xlsx",
+    mime="text/xlsx"
 )
