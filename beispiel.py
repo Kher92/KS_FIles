@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import io
+import os 
 st.set_page_config(
     page_title="Auszählung",
     layout="wide",
@@ -13,10 +14,11 @@ excel_files = [
     "https://github.com/Kher92/KS_FIles/blob/main/2025-12-01-017_KS_3421.xlsx",
     "https://github.com/Kher92/KS_FIles/blob/main/2025-12-02-035_KS_2390.xlsx"
 ]
+excel = os.path.basename(excel_files)
 col1, col2, col3 = st.columns([1,6,1]) # Adjust column ratios as needed
 with col2:
     st.image("gemini.png")
-selected_file_url = st.selectbox("Wähle die Datei aus", excel_files)
+selected_file_url = st.selectbox("Wähle die Datei aus", excel)
 
 file_url = selected_file_url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
 df = pd.read_excel(file_url, engine="openpyxl")
