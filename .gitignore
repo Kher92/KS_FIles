@@ -1,0 +1,10 @@
+*.csv
+build/
+dist/
+*.pkg
+*.exe
+*.png
+*.xlsx
+*.toc
+*.pyz
+*.zip
