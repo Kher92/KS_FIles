@@ -1,4 +1,4 @@
-select * into[2025-10-14-108_Nutrisana] from MB_GES_2020 where MB024 = 1 
+select * into[2025-10-14-108_Nutrisana] from MB_GES_2020 where MB024 = 1 ;
 
 insert into[2025-10-14-108_Nutrisana] select * from MB_GES_2020 where (MB024=1 or LIGHT24 = 1 or LIGHT24_HH = 1)and urngem not in (select urngem from[2025-10-14-108_Nutrisana]) and URNHHGEM in (
 	select distinct(URNHHGEM) from PERSON_1 where urn in (
@@ -6,7 +6,7 @@ insert into[2025-10-14-108_Nutrisana] select * from MB_GES_2020 where (MB024=1 o
 																		1530,1650,2000,2112,2213,2390,2421,2422,2682,3041,
 																		3042,3043,3201,3202,3421,3422,3423,3451,3571,3611,
 																		3701,3721,3722,3731,3741))
-or URN in (select URN from INFOS_1 where AFFILIATEID in (3401,3402,3403,3091))or URN in (select urn from CLUSTER_1 where ClusterID in ('C01','C03')))
+or URN in (select URN from INFOS_1 where AFFILIATEID in (3401,3402,3403,3091))or URN in (select urn from CLUSTER_1 where ClusterID in ('C01','C03')));
 
 delete from[2025-10-14-108_Nutrisana] where GENDERTYPEID not in (1,2)
 
@@ -39,7 +39,7 @@ delete from[2025-10-14-108_Nutrisana] where urngem in (select urngem from ZUSATZ
 delete from[2025-10-14-108_Nutrisana] where urngem not in (select URNGEM from gem_gesamt)
 delete from[2025-10-14-108_Nutrisana] where urngem in (select URNGEM from nix_ausland)
 delete from[2025-10-14-108_Nutrisana] where urngem in (select URNGEM from nix_tote)
-delete from[2025-10-14-108_Nutrisana] where urngem in (select urngem from zusatz_1 where urn in (select urn from umz_tbl where flag = 'Umgezogen'))
+delete from[2025-10-14-108_Nutrisana] where urngem in (select urngem from zusatz_1 where urn in (select urn from umz_tbl where flag = 'Umgezogen'));
 
 alter table[2025-10-14-108_Nutrisana] add 	
 	alter_kl char(10),

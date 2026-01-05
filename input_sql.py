@@ -14,7 +14,7 @@ warnings.filterwarnings("ignore",category=exc.SAWarning, message=".will not prod
 DB_SERVER = 'gemini-sql2'
 DATABASE = 'GEMINI_PSEUDO'
 SQL_FILE = "sssss.sql"
-SQL_SKRIPT = r"E:\GEMINI_PSEUDO\Auszählungen"
+SQL_SKRIPT = r"E:\GEMINI_PSEUDO\Auszählungen" ## muss geändert werden 
 SQL_Eingabe = None
 
 

@@ -3,7 +3,8 @@ import pandas as pd
 import os
 from io import BytesIO
 
-files_in = r"C:\Users\ks\Desktop\excelFiles"
+files_in = r"C:\Users\ks\Desktop\excelFiles" # dafür muss auch eine Lösung geben
+
 
 st.set_page_config(
     page_title="Probe",
