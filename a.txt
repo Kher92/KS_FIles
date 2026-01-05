@@ -1,0 +1,30 @@
+#     query2 = f"""select
+# 		mb012_p.[45-60],			mb012_p.[60-75],				mb012_p.[75+],				    
+# 		  mb012.[45-60],			  mb012.[60-75],				  mb012.[75+],			  		 
+# 		mb024_p.[45-60],			mb024_p.[60-75],				mb024_p.[75+],					
+# 		  mb024.[45-60],			  mb024.[60-75],				  mb024.[75+],			 		  
+#    mb024_p_rest.[45-60],	   mb024_p_rest.[60-75],		   mb024_p_rest.[75+],	     
+# 	 mb024_rest.[45-60],		 mb024_rest.[60-75],			 mb024_rest.[75+]		 	
+# 		 from 
+# (select gendertypeid, seg_kgm, [35-45],[45-60],[60-75],[75+],[90-95] from (select gendertypeid, seg_kgm, alter_kl, urngem from nutribiona
+# where mb012_P = 1 and synergie >=1   ) b pivot(count(urngem) for alter_kl in ([35-45],[45-60],[60-75],[75+],[90-95])) P) mb012_p,
+# (select gendertypeid, seg_kgm, [35-45],[45-60],[60-75],[75+],[90-95] from (select gendertypeid, seg_kgm, alter_kl, urngem from nutribiona
+# where mb012 = 1 and synergie >=1    ) b pivot(count(urngem) for alter_kl in ([35-45],[45-60],[60-75],[75+],[90-95])) p) mb012,
+# (select gendertypeid, seg_kgm, [35-45],[45-60],[60-75],[75+],[90-95] from (select gendertypeid, seg_kgm, alter_kl, urngem from nutribiona
+# where mb024_p = 1 and synergie >=1   ) b pivot(count(urngem) for alter_kl in ([35-45],[45-60],[60-75],[75+],[90-95]))P) mb024_p,
+# (select gendertypeid, seg_kgm, [35-45],[45-60],[60-75],[75+],[90-95] from (select gendertypeid, seg_kgm, alter_kl, urngem from nutribiona
+# where mb024 = 1 and synergie >=1    ) b pivot(count(urngem) for alter_kl in ([35-45],[45-60],[60-75],[75+],[90-95]))P) mb024,
+# (select gendertypeid, seg_kgm, [35-45],[45-60],[60-75],[75+],[90-95] from (select gendertypeid, seg_kgm, alter_kl, urngem from nutribiona
+# where mb024_p is null and synergie >=1    ) b pivot(count(urngem) for alter_kl in ([35-45],[45-60],[60-75],[75+],[90-95]))P)mb024_p_rest,
+# (select gendertypeid, seg_kgm, [35-45],[45-60],[60-75],[75+],[90-95] from (select gendertypeid, seg_kgm, alter_kl, urngem from nutribiona
+# where mb024 is null and synergie >=1    ) b pivot(count(urngem) for alter_kl in ([35-45],[45-60],[60-75],[75+],[90-95]))P) mb024_rest
+# where 
+# mb012_p.GENDERTYPEID=mb012.GENDERTYPEID and mb012.GENDERTYPEID=mb024_p.GENDERTYPEID and mb024_p.GENDERTYPEID=mb024.GENDERTYPEID and mb024.GENDERTYPEID=mb024_p_rest.GENDERTYPEID and mb024_p_rest.GENDERTYPEID=mb024_rest.GENDERTYPEID and
+# mb012_p.seg_kgm=mb012.seg_kgm and mb012.seg_kgm=mb024_p.seg_kgm and mb024_p.seg_kgm=mb024.seg_kgm and mb024.seg_kgm=mb024_p_rest.seg_kgm and mb024_p_rest.seg_kgm=mb024_rest.seg_kgm
+# and mb012_p.gendertypeid=1
+# order by mb012_p.seg_kgm
+# """
+#     with engine.connect() as conn:
+#             result = conn.execute(text(query2))
+#             if result.returns_rows:
+#                 rows = result.fetchall()
