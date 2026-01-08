@@ -8,28 +8,56 @@ files_in = r"C:\Users\ks\Desktop\excelFiles" # dafür muss auch eine Lösung geb
 
 st.set_page_config(
     page_title="Probe",
-    layout="wide",
-    page_icon="📊"
+    page_icon="📊",
+    layout="centered", # Optionen: "centered" oder "wide"
+    initial_sidebar_state="auto", # Optionen: "auto", "expanded", "collapsed"
+    menu_items={
+        'Get Help': 'https://www.extremelycoolapp.com/help',
+        'Report a bug': "https://www.extremelycoolapp.com/bug",
+        'About': "# Dies ist eine Probe-App!"
+    }
 )
 
 excel_files = [
     f for f in os.listdir(files_in)
-    if f.lower().endswith((".xlsx", ".xls"))
+    if f.lower().endswith((".xlsx", ".csv"))
 ]
-
+option = st.selectbox(
+    label="Wähle eine Stadt:",
+    options=["Berlin", "Hamburg", "München"],
+    index=0,  # Standardmäßig ist das erste Element (Index 0) vorausgewählt
+    help="Dies ist ein Hinweis für den Nutzer."
+)
+st.write("Deine Auswahl:", option)
 selected_file = st.selectbox(
     "Wähle die Datei aus",
     excel_files
 )
 
-st.title(f"📊 Auftrag: {selected_file}")
-
+# st.title(f"📊 Auftrag: {selected_file}")
+st.title(
+    body="10", 
+    help="This is a tooltip for the title", 
+    anchor=None  # Optional: identifier for the title in the URL
+)
 file_path = os.path.join(files_in, selected_file)
 
 @st.cache_data
 def load_data(path):
-    df = pd.read_excel(path)
-    return df
+    if path.endswith('.csv'):
+        try:
+            # Versuche Standard-CSV (Komma)
+            return pd.read_csv(path, encoding='utf-8')
+        except (UnicodeDecodeError, pd.errors.ParserError):
+            try:
+                # Versuche deutsches Excel-Format (Semikolon + ISO-Encoding)
+                return pd.read_csv(path, sep=';', encoding='iso-8859-1')
+            except Exception:
+                # Letzter Versuch: Alles überspringen, was Fehler macht
+                return pd.read_csv(path, sep=None, engine='python', on_bad_lines='skip', encoding='cp1252')
+    else:    
+        return pd.read_excel(path)
+
 
 df = load_data(file_path)
 df = df.dropna(how="all")
