@@ -1269,3 +1269,66 @@ exec sp_rename 'Woolovers','2025-12-02-036_WoolOvers'
 
 
 
+
+
+
+
+WITH shmayzer as (
+	SELECT DISTINCT p.URNHHGEM from PERSON_1 p JOIN TRANSACTION_1 t on p.urn=t.urn 
+	where t.affiliateid in (12,313)
+
+	UNION
+
+	SELECT DISTINCT p.URNHHGEM from PERSON_1 p join INFOS_1 ON p.urn=n.urn
+	WHERE n.affiliateid in (10)
+
+
+)
+select * into shmayzer_final from MB_GES_2020 m join shmayzer sh on m.URNHHGEM=sh.URNHHGEM 
+where mb0242 = 1 or LIGHT24=1 
+
+deine_Wahl = input("M fuer Männer oder F fuer Frauen pr B fuer Beide\n").lower() 
+if deine_Wahl =='M'.lower(): 
+	df_men = run_complex_age_report(engine,ages,1,alter_colu,sql_eingabe,f_type) 
+	df_men = df_men.set_index('seg_kgm')
+	df_men.columns=[f"Men_{c}" for c in df_men.columns]
+elif deine_Wahl == 'F'.lower(): 
+	df_women = run_complex_age_report(engine,ages,2,alter_colu,sql_eingabe,f_type) 
+	df_women =df_women.set_index('seg_kgm')
+	df_women.columns=[f"women_{c}" for c in df_women.columns]
+else:
+	 df_men = run_complex_age_report(engine,ages,1,alter_colu,sql_eingabe,f_type)
+	 df_women = run_complex_age_report(engine,ages,2,alter_colu,sql_eingabe,f_type)
+	 	df_men = df_men.set_index('seg_kgm')
+			df_women =df_women.set_index('seg_kgm')
+				df_men.columns=[f"Men_{c}" for c in df_men.columns]
+					df_women.columns=[f"women_{c}" for c in df_women.columns]
+					df= pd.concat([df_men,df_women],axis=1)
+
+
+
+
+
+
+SELECT *
+INTO Woolovers
+FROM MB_GES_2020
+WHERE MB024 = 1;(1,5)
+
+-- Step 2: إضافة أشخاص مؤهلين
+INSERT INTO Woolovers
+SELECT *
+FROM MB_GES_2020
+WHERE (MB024 = 1 OR LIGHT24 = 1 OR LIGHT24_HH = 1)(2,3,6,7,9,4,10)
+  AND URNgem NOT IN (SELECT URNgem FROM Woolovers)=> (1,2,3,4,5,6,7,9,10),(H1,H2,H3,H4,H5)
+  AND URNHHGEM IN (
+      SELECT DISTINCT p.URNHHGEM
+      FROM PERSON_1 p
+      WHERE p.URN IN (SELECT URN FROM TRANSACTION_1 WHERE affiliateid = 100) => (H1,H2,H4)
+         OR p.URN IN (SELECT URN FROM INFOS_1 WHERE affiliateid = 200) => (H3,H5)
+         OR p.URN IN (SELECT URN FROM CLUSTER_1 WHERE ClusterID = 'C03') => (H5)
+  );
+
+
+=> URNHHGEM(H1,H2,H3,H4,H5)
+=>URN(1,2,3,4,5,6,7,9,10)
