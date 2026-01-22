@@ -8,3 +8,5 @@ bitte mehr as
 [2026-01-22 12:49:29] neuer notiz zum beispiel 
 ---
 [2026-01-22 12:52:46] neuer notiz zum beispiel noch ein versuch 
+---
+[2026-01-22 12:59:04] letztes mal 
