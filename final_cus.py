@@ -142,41 +142,37 @@ notes = st.text_area("einfach hinschreiben")
 if st.button("speichern"):
     if notes.strip():
         try:
-            # الاتصال بـ GitHub
-            GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
-            REPO_NAME = "Kher92/KS_FIles"  #
+            from github import Github
+            import datetime
+
+            REPO_NAME = "Kher92/KS_FIles"
+            FILE_PATH = "client_notes.txt"
             BRANCH_NAME = "Customy"
 
-            FILE_PATH = "client_notes.txt"
             token = st.secrets["GITHUB_TOKEN"]
-
-            g = Github(GITHUB_TOKEN)
+            g = Github(token)
             repo = g.get_repo(REPO_NAME)
 
-            # قراءة محتوى الملف الحالي
             try:
-                contents = repo.get_contents(FILE_PATH)
+                contents = repo.get_contents(FILE_PATH, ref=BRANCH_NAME)
                 current_notes = contents.decoded_content.decode()
                 sha = contents.sha
             except:
                 current_notes = ""
                 sha = None
 
-            # إعداد الملاحظة الجديدة مع التاريخ
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             new_note = f"\n---\n[{timestamp}] {notes}"
-
             updated_notes = current_notes + new_note
 
-            # رفع الملف إلى GitHub
             if sha:
-                repo.update_file(FILE_PATH, "Add new note via Streamlit", updated_notes, sha)
+                repo.update_file(FILE_PATH, "Add new note via Streamlit", updated_notes, sha, branch=BRANCH_NAME)
             else:
-                repo.create_file(FILE_PATH, "Create notes file via Streamlit", updated_notes)
+                repo.create_file(FILE_PATH, "Create notes file via Streamlit", updated_notes, branch=BRANCH_NAME)
 
             st.success("✅ ES wurde gespeichert")
 
         except Exception as e:
-            st.error(f"❌   Error: {e}")
+            st.error(f"❌ Error: {e}")
     else:
-        st.warning(" Nichts zum Speichern.")
+        st.warning("Nichts zum Speichern.")
