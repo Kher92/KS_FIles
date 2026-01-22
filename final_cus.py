@@ -86,7 +86,8 @@ for col in filter_cols:
     unique_values = df[col].dropna().unique()
     st.write(unique_values)
     selected = st.multiselect(f"Filter {col}", options=unique_values, default=unique_values)
-    df_display = df_display[df[col].isin(selected)]
+    df_display = df_display[df_display[col].isin(selected)]
+
 
 df_head = df_display.copy()
 
