@@ -148,6 +148,7 @@ if st.button("speichern"):
             BRANCH_NAME = "Customy"
 
             FILE_PATH = "client_notes.txt"
+            token = st.secrets["GITHUB_TOKEN"]
 
             g = Github(GITHUB_TOKEN)
             repo = g.get_repo(REPO_NAME)
