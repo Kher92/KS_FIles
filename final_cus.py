@@ -3,7 +3,9 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+import datetime
 
+from github import Github
 
 
 
@@ -102,11 +104,14 @@ if "score_kgm" in df_display.columns:
 df["score_kgm"] = pd.to_numeric(df["score_kgm"], errors='coerce')
 
 plt.figure(figsize=(12,4))
-sns.barplot(data=df, x="alter_kl", y="score_kgm", hue="geschlecht", estimator=sum, palette="viridis")
+sns.barplot(data=df, x="ealter", y="score_kgm", hue="geschlecht", estimator=sum, palette="viridis")
 plt.title("Sum of Score KGM by Age and Gender")
 plt.xlabel("Alter Klassen")
 plt.ylabel("Total Score KGM")
 st.pyplot(plt.gcf())
+
+
+
 
 # plt.figure(figsize=(12,6))
 
@@ -133,11 +138,44 @@ st.download_button(
 st.markdown("Notizen für Suzzi")
 notes = st.text_area("einfach hinschreiben")
 
+# زر الحفظ
 if st.button("speichern"):
     if notes.strip():
-        notes_file = os.path.join(os.getcwd(), "client_notes.txt")
-        with open(notes_file, "a", encoding="utf-8") as f:
-            f.write(f"\n---\n{notes}\n")
-        st.success(f"  {notes_file}")
+        try:
+            # الاتصال بـ GitHub
+            GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+            REPO_NAME = "Kher92/KS_FIles"  #
+            BRANCH_NAME = "Customy"
+
+            FILE_PATH = "client_notes.txt"
+
+            g = Github(GITHUB_TOKEN)
+            repo = g.get_repo(REPO_NAME)
+
+            # قراءة محتوى الملف الحالي
+            try:
+                contents = repo.get_contents(FILE_PATH)
+                current_notes = contents.decoded_content.decode()
+                sha = contents.sha
+            except:
+                current_notes = ""
+                sha = None
+
+            # إعداد الملاحظة الجديدة مع التاريخ
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            new_note = f"\n---\n[{timestamp}] {notes}"
+
+            updated_notes = current_notes + new_note
+
+            # رفع الملف إلى GitHub
+            if sha:
+                repo.update_file(FILE_PATH, "Add new note via Streamlit", updated_notes, sha)
+            else:
+                repo.create_file(FILE_PATH, "Create notes file via Streamlit", updated_notes)
+
+            st.success("✅ ES wurde gespeichert")
+
+        except Exception as e:
+            st.error(f"❌   Error: {e}")
     else:
-        st.warning("Es gibt nichts zum Speichern")
+        st.warning(" Nichts zum Speichern.")
