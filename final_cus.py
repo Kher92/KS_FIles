@@ -147,12 +147,14 @@ if st.button("speichern"):
 
             REPO_NAME = "Kher92/KS_FIles"
             FILE_PATH = "client_notes.txt"
-            BRANCH_NAME = "Customy"
+            BRANCH_NAME = "customy"
 
+            # استخدم secret من Streamlit Cloud
             token = st.secrets["GITHUB_TOKEN"]
             g = Github(token)
             repo = g.get_repo(REPO_NAME)
 
+            # قراءة الملف الحالي (أو إنشاء جديد إذا لم يكن موجود)
             try:
                 contents = repo.get_contents(FILE_PATH, ref=BRANCH_NAME)
                 current_notes = contents.decoded_content.decode()
