@@ -16,7 +16,7 @@ st.set_page_config(
     layout="wide"
 )
 
-gemini = st.image("Logo.jpg",width=500)
+gemini = st.image("Logo.png",width=500)
 
 
 
