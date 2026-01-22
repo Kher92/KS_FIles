@@ -45,7 +45,7 @@ st.markdown(
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("f.csv", sep=";")  
+    df = pd.read_csv("final.csv", sep=";")  
     df.columns = df.columns.str.lower().str.strip()
     return df
 
