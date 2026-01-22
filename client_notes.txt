@@ -1,14 +1,4 @@
 
----
-bitte mehr as
 
 ---
-[2026-01-22 12:48:04] lk
----
-[2026-01-22 12:49:29] neuer notiz zum beispiel 
----
-[2026-01-22 12:52:46] neuer notiz zum beispiel noch ein versuch 
----
-[2026-01-22 12:59:04] letztes mal 
----
-[2026-01-22 13:13:49] jkj
+[2026-01-22 14:05:36] noch ein probe
