@@ -16,7 +16,7 @@ st.set_page_config(
     layout="wide"
 )
 
-gemini = st.image("logo.jpg",width=500)
+gemini = st.image("Logo.jpg",width=500)
 
 
 
@@ -45,7 +45,7 @@ st.markdown(
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("f.csv", sep=";")  # ت
+    df = pd.read_csv("f.csv", sep=";")  
     df.columns = df.columns.str.lower().str.strip()
     return df
 
@@ -103,12 +103,12 @@ if "score_kgm" in df_display.columns:
 
 df["score_kgm"] = pd.to_numeric(df["score_kgm"], errors='coerce')
 
-plt.figure(figsize=(12,4))
-sns.barplot(data=df, x="ealter", y="score_kgm", hue="geschlecht", estimator=sum, palette="viridis")
-plt.title("Sum of Score KGM by Age and Gender")
-plt.xlabel("Alter Klassen")
-plt.ylabel("Total Score KGM")
-st.pyplot(plt.gcf())
+# plt.figure(figsize=(12,4))
+# sns.barplot(data=df, x="ealter", y="score_kgm", hue="geschlecht", estimator=sum, palette="viridis")
+# plt.title("Sum of Score KGM by Age and Gender")
+# plt.xlabel("Alter Klassen")
+# plt.ylabel("Total Score KGM")
+# st.pyplot(plt.gcf())
 
 
 
@@ -127,7 +127,7 @@ st.pyplot(plt.gcf())
 # plt.ylabel("Anzahl")
 # plt.show()
 
-csv_data = df_display.to_csv(index=False, sep=",").encode("latin1")
+csv_data = df_display.to_csv(index=False, sep=";").encode("latin1")
 st.download_button(
     label="Download CSV",
     data=csv_data,
