@@ -42,7 +42,7 @@ st.markdown(
 )
 
 
-
+##hier muss ein Filter gesetzt wereden
 @st.cache_data
 def load_data():
     df = pd.read_csv("final.csv", sep=";")  

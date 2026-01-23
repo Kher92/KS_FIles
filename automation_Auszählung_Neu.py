@@ -231,7 +231,7 @@ def main():
                    df_women = run_complex_age_report(engine,ages,2,alter_colu,sql_eingabe,f_type)
                    df_men = df_men.set_index('seg_kgm')
                    df_women =df_women.set_index('seg_kgm')
-                   df_men.columns=[f"Men_{c}" for c in df_men.columns]
+                   df_men.columns=[f"{c}" for c in df_men.columns]
                    df_women.columns=[f"women_{c}" for c in df_women.columns]
                    df= pd.concat([df_men,df_women],axis=1)
             if valid:
