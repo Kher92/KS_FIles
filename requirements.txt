@@ -3,3 +3,6 @@ matplotlib
 pandas
 seaborn
 PyGithub
+pandas
+streamlit
+openpyxl
