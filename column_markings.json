@@ -1,5 +1,8 @@
 {
-  "timestamp": "2026-01-23 13:30:06",
-  "marked_columns": [],
+  "timestamp": "2026-01-23 13:30:12",
+  "marked_columns": [
+    "mb012",
+    "mb024"
+  ],
   "note": "vx"
 }
