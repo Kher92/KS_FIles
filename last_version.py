@@ -30,26 +30,37 @@ st.markdown(
 )
 
 # ---------------- Load data ----------------
+
+
 @st.cache_data
 def load_data():
-    df = pd.read_excel(
-        "Report_nutribiona.xlsx",
        
+    return pd.read_excel(
+        "Report_nutribiona.xlsx",
+        sheet_name=None,
         header=1
-        
     )
-    df.columns = (
-        df.columns
-        .astype(str)
-        .str.strip()
-        .str.lower()
-        .str.replace(r"unnamed:.*", "", regex=True)
+
+sheets = load_data()
+
+sheet_name = st.selectbox(
+    "📄  SheetAuswahl",
+    options=list(sheets.keys())
 )
-    df = df.loc[:, df.columns != ""]
-    return df
 
-df = load_data()
+df = sheets[sheet_name]
 
+# تنظيف الأعمدة
+df.columns = (
+    df.columns
+    .astype(str)
+    .str.strip()
+    .str.lower()
+    .str.replace(r"unnamed:.*", "", regex=True)
+)
+df = df.loc[:, df.columns != ""]
+
+st.dataframe(df)
 
 
 # st.subheader("Spalten auswählen")
@@ -61,7 +72,6 @@ df = load_data()
 # )
 
 # df_display = df[cols_to_show].copy()
-st.dataframe(df)
 
 st.subheader("Filter setzen")
 # for col in df:
