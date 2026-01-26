@@ -1,8 +1,11 @@
 {
-  "timestamp": "2026-01-23 13:30:12",
+  "timestamp": "2026-01-26 12:05:05",
   "marked_columns": [
+    "seg_kgm",
+    "mb012_p",
     "mb012",
-    "mb024"
+    "mb012_p.1",
+    "mb012.1"
   ],
-  "note": "vx"
+  "note": "öl"
 }
