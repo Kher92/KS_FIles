@@ -169,7 +169,7 @@ if st.button("💾 Speichern"):
 
             payload = {
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "marked_columns": df.columns,
+                "marked_columns": filter_cols,
                 "note": notes
             }
 
