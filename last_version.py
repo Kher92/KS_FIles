@@ -125,9 +125,8 @@ st.dataframe(
 )
 df_clean_data = df[mark_cols]
 buffer = io.BytesIO()
-with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-    # تحويل Styler (الذي يحتوي على الألوان) إلى Excel
-    styled_df.to_excel(writer, index=False, sheet_name='Sheet1')
+with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+    styled_df.to_excel(writer, index=False)
     
     # الحصول على الكائن المنسق لإضافة لمسات إضافية إذا لزم الأمر
     workbook  = writer.book
