@@ -156,7 +156,7 @@ st.subheader("Notizen für Suzzi")
 notes = st.text_area("Notiz schreiben")
 
 if st.button("💾 Speichern"):
-    if not df.columns and not notes.strip():
+    if  not notes.strip():
         st.warning("⚠️ Bitte erst deine Anmerkung")
     else:
         try:
