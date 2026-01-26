@@ -3,6 +3,8 @@ import pandas as pd
 import datetime
 import json
 from github import Github
+import io
+
 
 # ---------------- Page config ----------------
 st.set_page_config(
@@ -31,60 +33,70 @@ st.markdown(
 @st.cache_data
 def load_data():
     df = pd.read_excel(
-        "Report_nutribiona_2026-01-23_12-38-40.xlsx",
-        header=1  # تجاهل صف Männer / Frauen
+        "Report_nutribiona.xlsx",
+       
+        header=1
+        
     )
-
     df.columns = (
         df.columns
         .astype(str)
         .str.strip()
         .str.lower()
-        .str.replace("unnamed:.*", "", regex=True)
-    )
-
+        .str.replace(r"unnamed:.*", "", regex=True)
+)
     df = df.loc[:, df.columns != ""]
     return df
 
 df = load_data()
 
-# ---------------- Column selection ----------------
-st.subheader("Spalten auswählen")
 
-cols_to_show = st.multiselect(
-    "Welche Spalten anzeigen?",
+
+# st.subheader("Spalten auswählen")
+
+# cols_to_show = st.multiselect(
+#     "Welche Spalten anzeigen?",
+#     options=df.columns.tolist(), #### hier muss angepasst werden 
+#     default=df.columns.tolist()
+# )
+
+# df_display = df[cols_to_show].copy()
+st.dataframe(df)
+
+st.subheader("Filter setzen")
+# for col in df:
+#     if col == 'seg_kgm':
+#         df_display=df.drop(columns={'seg_kgm'})  
+   
+filter_cols = st.multiselect(
+    "Filter nach Spalten",
     options=df.columns.tolist(),
     default=df.columns.tolist()
 )
-
-df_display = df[cols_to_show].copy()
-
-# ---------------- Filters ----------------
-st.subheader("Filter setzen")
-
-filter_cols = st.multiselect(
-    "Filter nach Spalten",
-    options=df_display.columns.tolist()
-)
+df_neu ={}
 
 for col in filter_cols:
-    unique_values = df_display[col].dropna().unique().tolist()
+    unique_values = df[col].dropna().unique().tolist()
+    df_neu[col] = unique_values
 
-    selected = st.multiselect(
-        f"Filter {col}",
-        options=unique_values,
-        default=unique_values
-    )
+    
+   
+st.dataframe(df_neu)
+    
 
-    if selected:
-        df_display = df_display[df_display[col].isin(selected)]
+    # selected = st.multiselect(
+    #     f"Filter {col}",
+    #     options=unique_values
+    # )
 
-# ---------------- Column Highlight ----------------
+    # if selected:
+    #     df_display = df_display[df_display[col].isin(selected)]
+
 st.subheader("Spalten markieren")
 
 mark_cols = st.multiselect(
     "Welche Spalten gelb markieren?",
-    options=df_display.columns.tolist()
+    options=filter_cols
 )
 
 def highlight_columns(df, cols):
@@ -92,35 +104,61 @@ def highlight_columns(df, cols):
     for c in cols:
         styles[c] = "background-color: yellow"
     return styles
+df_higli= df[mark_cols].copy()
+print(f"the df_hig ist : {df_higli}")
+numeric_cols = df_higli.select_dtypes(include=['number']).columns
+styled_df = df_higli.style.format({col: "{:.0f}" for col in numeric_cols})
+# styled_df = df_higli.style.format(
+#     formatter={col: "{:.0f}" for col in df_higli.columns if df_higli.dtypes==int  str} 
+
+# )
+styled_df=styled_df.apply(
+    highlight_columns,
+    cols=mark_cols,
+    axis=None
+)
 
 st.dataframe(
-    df_display.style.apply(
-        highlight_columns,
-        cols=mark_cols,
-        axis=None
-    ),
+    styled_df,
+    
     use_container_width=True
 )
+df_clean_data = df[mark_cols]
+buffer = io.BytesIO()
+with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+    # تحويل Styler (الذي يحتوي على الألوان) إلى Excel
+    styled_df.to_excel(writer, index=False, sheet_name='Sheet1')
+    
+    # الحصول على الكائن المنسق لإضافة لمسات إضافية إذا لزم الأمر
+    workbook  = writer.book
+    worksheet = writer.sheets['Sheet1']
 
-# ---------------- Download CSV ----------------
-csv_data = df_display.to_csv(index=False, sep=";").encode("latin1")
-
+# تجهيز البيانات للتنزيل
+excel_data = buffer.getvalue()
 st.download_button(
-    label="⬇️ Download CSV",
-    data=csv_data,
-    file_name="filtered_data.csv",
-    mime="text/csv"
+    label="speichern📥",
+    data=excel_data,
+    file_name="data_colored.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+#csv_data = df_clean_data.to_csv(index=False, sep=";",encoding="utf-8-sig")
 
-# ---------------- Notes & Save to GitHub ----------------
+
+# st.download_button(
+#     label="⬇️ Download CSV",
+#     data=csv_data,
+#     file_name="filtered_data.csv",
+#     mime="text/csv"
+# )
+
 st.divider()
 st.subheader("Notizen für Suzzi")
 
-notes = st.text_area("Notiz schreiben (z.B. انتهيت)")
+notes = st.text_area("Notiz schreiben")
 
 if st.button("💾 Speichern"):
     if not mark_cols and not notes.strip():
-        st.warning("⚠️ لا يوجد تعليم أو ملاحظة")
+        st.warning("⚠️ Bitte erst deine Anmerkung")
     else:
         try:
             token = st.secrets["GITHUB_TOKEN"]
