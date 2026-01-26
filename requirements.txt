@@ -6,3 +6,4 @@ PyGithub
 pandas
 streamlit
 openpyxl
+xlswriter
