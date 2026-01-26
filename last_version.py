@@ -92,41 +92,41 @@ st.dataframe(df_neu)
     # if selected:
     #     df_display = df_display[df_display[col].isin(selected)]
 
-st.subheader("Spalten markieren")
+# st.subheader("Spalten markieren")
 
-mark_cols = st.multiselect(
-    "Welche Spalten gelb markieren?",
-    options=filter_cols
-)
-
-def highlight_columns(df, cols):
-    styles = pd.DataFrame("", index=df.index, columns=df.columns)
-    for c in cols:
-        styles[c] = "background-color: yellow"
-    return styles
-df_higli= df[mark_cols].copy()
-print(f"the df_hig ist : {df_higli}")
-numeric_cols = df_higli.select_dtypes(include=['number']).columns
-styled_df = df_higli.style.format({col: "{:.0f}" for col in numeric_cols})
-# styled_df = df_higli.style.format(
-#     formatter={col: "{:.0f}" for col in df_higli.columns if df_higli.dtypes==int  str} 
-
+# mark_cols = st.multiselect(
+#     "Welche Spalten gelb markieren?",
+#     options=filter_cols
 # )
-styled_df=styled_df.apply(
-    highlight_columns,
-    cols=mark_cols,
-    axis=None
-)
 
-st.dataframe(
-    styled_df,
+# def highlight_columns(df, cols):
+#     styles = pd.DataFrame("", index=df.index, columns=df.columns)
+#     for c in cols:
+#         styles[c] = "background-color: yellow"
+#     return styles
+# df_higli= df[mark_cols].copy()
+# print(f"the df_hig ist : {df_higli}")
+# numeric_cols = df_higli.select_dtypes(include=['number']).columns
+# styled_df = df_higli.style.format({col: "{:.0f}" for col in numeric_cols})
+# # styled_df = df_higli.style.format(
+# #     formatter={col: "{:.0f}" for col in df_higli.columns if df_higli.dtypes==int  str} 
+
+# # )
+# styled_df=styled_df.apply(
+#     highlight_columns,
+#     cols=mark_cols,
+#     axis=None
+# )
+
+# st.dataframe(
+#     styled_df,
     
-    use_container_width=True
-)
-df_clean_data = df[mark_cols]
+#     use_container_width=True
+# )
+# df_clean_data = df[mark_cols]
 buffer = io.BytesIO()
 with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-    styled_df.to_excel(writer, index=False)
+    df.to_excel(writer, index=False)
     
     # الحصول على الكائن المنسق لإضافة لمسات إضافية إذا لزم الأمر
     workbook  = writer.book
@@ -156,7 +156,7 @@ st.subheader("Notizen für Suzzi")
 notes = st.text_area("Notiz schreiben")
 
 if st.button("💾 Speichern"):
-    if not mark_cols and not notes.strip():
+    if not df.columns and not notes.strip():
         st.warning("⚠️ Bitte erst deine Anmerkung")
     else:
         try:
@@ -169,7 +169,7 @@ if st.button("💾 Speichern"):
 
             payload = {
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "marked_columns": mark_cols,
+                "marked_columns": df.columns,
                 "note": notes
             }
 
