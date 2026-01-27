@@ -60,7 +60,8 @@ df.columns = (
 )
 df = df.loc[:, df.columns != ""]
 
-st.dataframe(df)
+#st.dataframe(df)
+st.table(df)
 
 
 # st.subheader("Spalten auswählen")
@@ -81,7 +82,7 @@ st.subheader("Filter setzen")
 filter_cols = st.multiselect(
     "Filter nach Spalten",
     options=df.columns.tolist(),
-    default=df.columns.tolist()
+    default=['seg_kgm','mb012']
 )
 df_neu ={}
 
