@@ -4,8 +4,41 @@ import datetime
 import json
 from github import Github
 import io
+import smtplib
+from email.mime.text import MIMEText
+import requests
 
+def send_telegram_alert(note_text):
+    token = st.secrets["TELEGRAM_TOKEN"]
+    chat_id = st.secrets["TELEGRAM_CHAT_ID"]
+    message = (
+        f"🔔 **إشعار جديد من Gemini Dashboard**\n\n"
+        f"📝 **الملاحظة:**\n{note_text}\n\n"
+        f"⏰ **التوقيت:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+    url = f"https://api.telegram.org{token}/sendMessage"
+    payload = {"chat_id": chat_id, "text": message, "parse_mode": "Markdown"}
+    try:
+        requests.post(url, data=payload)
+    except Exception as e:
+        st.error(f"خطأ في إرسال تلغرام: {e}")
 
+def send_email_notification(note_text):
+    sender_email = st.secrets["EMAIL_USER"]
+    receiver_email = st.secrets["EMAIL_RECEIVER"]
+    password = st.secrets["EMAIL_PASSWORD"] # App Password
+
+    msg = MIMEText(f"العميل ترك ملاحظة جديدة:\n\n{note_text}")
+    msg['Subject'] = '🚀 Gemini Dashboard Update'
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+    except Exception as e:
+        st.error(f"خطأ في إرسال الإيميل: {e}")
 st.set_page_config(
     page_title="Gemini Dashboard",
     page_icon="☁️",
@@ -195,6 +228,8 @@ st.subheader("📝 Notizen für Suzzi")
 notes = st.text_area("Notiz schreiben")
 
 if st.button("💾 Speichern"):
+    
+
     if not notes.strip():
         st.warning("⚠️ Bitte erst deine Anmerkung")
     else:
@@ -202,39 +237,22 @@ if st.button("💾 Speichern"):
             token = st.secrets["GITHUB_TOKEN"]
             g = Github(token)
             repo = g.get_repo("Kher92/KS_FIles")
-
             FILE_PATH = "column_markings.json"
             BRANCH = "customy"
-
-            # تحضير البيانات للحفظ
             payload = {
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "selected_seg_kgm_values": selected_seg_values if 'selected_seg_values' in locals() else [],
-                "marked_columns": mark_cols if 'mark_cols' in locals() else [],
-                "selected_columns": selected_seg_values if 'cols_to_show' in locals() else [],
                 "note": notes
             }
-
             content = json.dumps(payload, indent=2, ensure_ascii=False)
-
             try:
                 file = repo.get_contents(FILE_PATH, ref=BRANCH)
-                repo.update_file(
-                    FILE_PATH,
-                    "Update column markings",
-                    content,
-                    file.sha,
-                    branch=BRANCH
-                )
+                repo.update_file(FILE_PATH, "Update column markings", content, file.sha, branch=BRANCH)
             except:
-                repo.create_file(
-                    FILE_PATH,
-                    "Create column markings",
-                    content,
-                    branch=BRANCH
-                )
+                repo.create_file(FILE_PATH, "Create column markings", content, branch=BRANCH)
 
-            st.success("✅ تم حفظ التعليم والملاحظة بنجاح")
+            send_telegram_alert(notes)
+
+            st.success("✅ تم حفظ التعليم والملاحظة بنجاح وإرسال إشعار فوري!")
 
         except Exception as e:
             st.error(f"❌ Error: {e}")
