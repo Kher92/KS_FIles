@@ -1,16 +1,4 @@
 {
-  "timestamp": "2026-01-28 12:23:00",
-  "selected_seg_kgm_values": [
-    1,
-    2,
-    3,
-    4
-  ],
-  "marked_columns": [
-    "seg_kgm",
-    "mb012_p_45_60",
-    "mb012_p_45_60kumliert"
-  ],
-  "selected_columns": [],
-  "note": "fertigl"
+  "timestamp": "2026-01-28 12:44:51",
+  "note": "finito"
 }
