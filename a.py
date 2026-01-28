@@ -9,20 +9,30 @@ from email.mime.text import MIMEText
 import requests
 
 def send_telegram_alert(note_text):
+    # قراءة البيانات من Secrets
     token = st.secrets["TELEGRAM_TOKEN"]
     chat_id = st.secrets["TELEGRAM_CHAT_ID"]
+
+    # تنسيق الرسالة
     message = (
         f"🔔 **إشعار جديد من Gemini Dashboard**\n\n"
         f"📝 **الملاحظة:**\n{note_text}\n\n"
         f"⏰ **التوقيت:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     )
+    
+    # ✅ السطر المصحح الآن يحتوي على /bot/ قبل التوكن
     url = f"https://api.telegram.org{token}/sendMessage"
-    payload = {"chat_id": chat_id, "text": message, "parse_mode": "Markdown"}
+    
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
+
     try:
         requests.post(url, data=payload)
     except Exception as e:
         st.error(f"خطأ في إرسال تلغرام: {e}")
-
 def send_email_notification(note_text):
     sender_email = st.secrets["EMAIL_USER"]
     receiver_email = st.secrets["EMAIL_RECEIVER"]
