@@ -8,37 +8,24 @@ import smtplib
 from email.mime.text import MIMEText
 import requests
 
-def send_telegram_alert_simple(note_text, marked_columns=None, filtered_rows=0, total_rows=0):
+def send_telegram_alert_simple(note_text):
     """
-    نسخة أبسط لإرسال إشعار Telegram
+    نسخة مبسطة لإرسال إشعار Telegram
     """
     try:
         token = st.secrets["TELEGRAM_TOKEN"]
         chat_id = st.secrets["TELEGRAM_CHAT_ID"]
         
-        # بناء الرسالة الأساسية
-        message_parts = [
-            f"🔔 **Gemini Dashboard Update**\n\n",
-            f"📝 **Notiz:**\n{note_text}\n\n",
-            f"📈 **Statistik:**\n",
-            f"• Sheet: {sheet_name}\n",
-            f"• Zeilen: {filtered_rows:,}/{total_rows:,}\n",
-        ]
-        
-        # إضافة الأعمدة المميزة إذا وجدت
-        if marked_columns and len(marked_columns) > 0:
-            message_parts.append(f"\n🎯 **Markierte Spalten ({len(marked_columns)}):**\n")
-            
-            # عرض الأعمدة في صفوف
-            for i in range(0, len(marked_columns), 5):
-                cols_chunk = marked_columns[i:i+5]
-                message_parts.append(f"`{'`, `'.join(cols_chunk)}`\n")
-        
-        # إضافة التوقيت
-        message_parts.append(f"\n⏰ {datetime.datetime.now().strftime('%d.%m.%Y %H:%M')}")
-        
-        # دمج الرسالة
-        message = "".join(message_parts)
+        # رسالة بسيطة مع معلومات أساسية
+        message = (
+            f"🔔 **Neue Notiz von Gemini Dashboard**\n\n"
+            f"**Notiz:**\n{note_text}\n\n"
+            f"**Details:**\n"
+            f"• Sheet: {sheet_name}\n"
+            f"• Zeit: {datetime.datetime.now().strftime('%H:%M %d.%m.%Y')}\n"
+            f"• Benutzer: Kher\n\n"
+            f"ℹ️ _Diese Notiz wurde im Dashboard gespeichert_"
+        )
         
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         
@@ -258,24 +245,32 @@ st.subheader("📝 Notizen für Suzzi")
 notes = st.text_area("Notiz schreiben")
 
 if st.button("💾 Speichern"):
+    
+
     if not notes.strip():
         st.warning("⚠️ Bitte erst deine Anmerkung")
     else:
         try:
-            # إرسال إشعار Telegram مع التفاصيل
-            telegram_sent = send_telegram_alert_simple(
-                note_text=notes,
-                marked_columns=st.session_state.get('marked_columns', []),
-                filtered_rows_count=len(df_filtered_rows),  # عدد الأسطر بعد الفلترة
-                total_rows_count=len(df)  # العدد الإجمالي
-            )
-            
-            if telegram_sent:
-                st.success("✅ Telegram-Benachrichtigung gesendet")
-            
-            # ثم بقية الكود لحفظ في GitHub...
-            # ... your existing GitHub code
-            
+            token = st.secrets["GITHUB_TOKEN"]
+            g = Github(token)
+            repo = g.get_repo("Kher92/KS_FIles")
+            FILE_PATH = "column_markings.json"
+            BRANCH = "customy"
+            payload = {
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "note": notes
+            }
+            content = json.dumps(payload, indent=2, ensure_ascii=False)
+            try:
+                file = repo.get_contents(FILE_PATH, ref=BRANCH)
+                repo.update_file(FILE_PATH, "Update column markings", content, file.sha, branch=BRANCH)
+            except:
+                repo.create_file(FILE_PATH, "Create column markings", content, branch=BRANCH)
+
+            send_telegram_alert_simple(notes)
+
+            st.success("✅ تم حفظ التعليم والملاحظة بنجاح وإرسال إشعار فوري!")
+
         except Exception as e:
             st.error(f"❌ Error: {e}")
 
