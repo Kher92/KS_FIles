@@ -8,31 +8,56 @@ import smtplib
 from email.mime.text import MIMEText
 import requests
 
-def send_telegram_alert(note_text):
-    # قراءة البيانات من Secrets
-    token = st.secrets["TELEGRAM_TOKEN"]
-    chat_id = st.secrets["TELEGRAM_CHAT_ID"]
-
-    # تنسيق الرسالة
-    message = (
-        f"🔔 **إشعار جديد من Gemini Dashboard**\n\n"
-        f"📝 **الملاحظة:**\n{note_text}\n\n"
-        f"⏰ **التوقيت:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-    )
-    
-    # ✅ السطر المصحح الآن يحتوي على /bot/ قبل التوكن
-    url = f"https://api.telegram.org{token}/sendMessage"
-    
-    payload = {
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "Markdown"
-    }
-
+def send_telegram_alert(note_text, success=True):
+    """
+    إرسال إشعار إلى Telegram مع تحسينات
+    """
     try:
-        requests.post(url, data=payload)
+        token = st.secrets.get("TELEGRAM_TOKEN")
+        chat_id = st.secrets.get("TELEGRAM_CHAT_ID")
+        
+        if not token or not chat_id:
+            print("⚠️ Telegram credentials missing in secrets")
+            return
+        
+        # تحديد أيقونة حسب النوع
+        icon = "✅" if success else "❌"
+        
+        # تنسيق الرسالة
+        message = (
+            f"{icon} **Gemini Dashboard Notification**\n\n"
+            f"**Message:** {note_text}\n\n"
+            f"**Time:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"**Status:** {'Success' if success else 'Error'}"
+        )
+        
+        # ✅ العنوان الصحيح مع /bot/
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        
+        payload = {
+            "chat_id": chat_id,
+            "text": message,
+            "parse_mode": "Markdown",
+            "disable_notification": False
+        }
+        
+        # إرسال الطلب
+        response = requests.post(url, json=payload, timeout=10)
+        
+        if response.status_code == 200:
+            print("📱 Telegram alert sent successfully")
+            return True
+        else:
+            error_msg = response.json().get('description', 'Unknown error')
+            print(f"❌ Telegram error: {error_msg}")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print("⏱️ Telegram request timeout")
     except Exception as e:
-        st.error(f"خطأ في إرسال تلغرام: {e}")
+        print(f"⚠️ Error in Telegram function: {e}")
+    
+    return False
 def send_email_notification(note_text):
     sender_email = st.secrets["EMAIL_USER"]
     receiver_email = st.secrets["EMAIL_RECEIVER"]
