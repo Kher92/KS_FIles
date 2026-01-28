@@ -28,14 +28,13 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ---------------- Load data ----------------
 
 
 @st.cache_data
 def load_data():
        
     return pd.read_excel(
-        "Report_giordano_2026-01-27_13-51-57.xlsx",
+        "Report_nutribiona_2026-01-28_09-10-07 - Kopie.xlsx",
         sheet_name=None
         
     )
@@ -64,110 +63,108 @@ st.dataframe(df)
 st.subheader("🔍 Filter Zeilen nach seg_kgm")
 
 if 'seg_kgm' in df.columns:
-    seg_values = df.columns.tolist()
+    # تصحيح: جلب القيم الفريدة من العمود وليس أسماء الأعمدة
+    available_seg_values = df   
     
-    # اختيار القيم المراد فلترتها
     selected_seg_values = st.multiselect(
-        "Wähle seg_kgm Werte für Filterung",
-        options=seg_values,
-        default=seg_values[:3] if len(seg_values) >= 3 else seg_values  # 
+        "Welche Segment-Werte (seg_kgm) filtern?",
+        options=available_seg_values
     )
     
-    # تطبيق الفلتر
+    # تطبيق فلترة الأسطر بناءً على القيم
     if selected_seg_values:
-        filtered_df = df[df['seg_kgm'].isin(selected_seg_values)]
-        
-        # عرض عدد الصفوف المفلترة
-        st.info(f"📈 **{len(filtered_df)} Zeilen** entsprechen den ausgewählten seg_kgm Werten")
-        
-        # عرض البيانات المفلترة
-        st.dataframe(filtered_df, use_container_width=True)
-        
-        # إذا أردت رؤية الصفوف من 1 إلى 3 فقط
-#         st.subheader("📋 Erstes bis drittes Ergebnis")
-#         if len(filtered_df) >= 3:
-#             first_three = filtered_df.head(3)
-#             st.dataframe(first_three)
-#         elif len(filtered_df) > 0:
-#             st.dataframe(filtered_df)
-#             st.warning(f"Nur {len(filtered_df)} Zeilen gefunden")
-#         else:
-#             st.warning("Keine Zeilen gefunden")
-#     else:
-#         st.warning("Bitte wählen Sie mindestens einen seg_kgm Wert")
-# else:
-#     st.error("Die Spalte 'seg_kgm' wurde nicht im Datensatz gefunden")
+        df_filtered_rows = df[df['seg_kgm'].isin(selected_seg_values)].copy()
+    else:
+        df_filtered_rows = df.copy()
+    
+    st.info(f"📈 تم العثور على {len(df_filtered_rows)} سطر بناءً على فلترة القيم.")
+else:
+    st.error("العمود 'seg_kgm' غير موجود.")
+    df_filtered_rows = df.copy()
 
-# # ---------------- فلترة الأعمدة ----------------
-# st.subheader("📋 Spalten auswählen")
+# ---------------- 2. اختيار الأعمدة ----------------
+st.subheader("📋 2. Spalten auswählen")
 
-# اختيار الأعمدة المراد عرضها
-all_columns = df.columns.tolist()
-cols_to_show = st.multiselect(
-    "Welche Spalten anzeigen?",
+# نتيح للعميل اختيار الأعمدة التي يريد الإبقاء عليها
+all_columns = df_filtered_rows.columns.tolist()
+selected_cols = st.multiselect(
+    "Welche Spalten möchtest du behalten?",
     options=all_columns,
-    default=all_columns
+    default=all_columns[:5] if len(all_columns) > 5 else all_columns # افتراضياً أول 5 أعمدة
 )
 
-if cols_to_show:
-    if 'filtered_df' in locals() and not filtered_df.empty:
-        df_display = filtered_df[cols_to_show].copy()
-    else:
-        df_display = df[cols_to_show].copy()
-    
-    # st.subheader("📊 Angezeigte Daten (Gefiltert)")
-    # st.dataframe(df_display, use_container_width=True)
+if not selected_cols:
+    st.warning("الرجاء اختيار عمود واحد على الأقل.")
+    df_step2 = df_filtered_rows.copy()
+else:
+    df_step2 = df_filtered_rows[selected_cols].copy()
 
-# ---------------- خيارات التمييز (Highlighting) ----------------
-st.subheader("🎨 Spalten markieren")
+# ---------------- 3. اختيار أسطر محددة (Interaktive Auswahl) ----------------
+st.subheader("🖱️ 3. Spezifische Zeilen auswählen")
+st.write("قم بتحديد الأسطر التي تريد العمل عليها من الجدول أدناه:")
 
-if 'df_display' in locals():
-    mark_cols = st.multiselect(
-        "Welche Spalten gelb markieren?",
-        options=df_display.columns.tolist(),
-        default=[]
+# عرض الجدول مع خاصية التحديد
+event = st.dataframe(
+    df_step2,
+    use_container_width=True,
+    on_select="rerun", # تفعيل خاصية التحديد التفاعلي
+    selection_mode="multi-row"
+)
+
+# الحصول على الأسطر المختارة يدوياً
+selected_row_indices = event.selection.rows
+if selected_row_indices:
+    df_step3 = df_step2.iloc[selected_row_indices].copy()
+    st.success(f"✅ تم اختيار {len(df_step3)} أسطر يدوياً.")
+else:
+    df_step3 = df_step2.copy()
+    st.info("لم يتم اختيار أسطر محددة، سيتم استخدام كامل الجدول المفلتر.")
+
+# ---------------- 4. تمييز الأعمدة (Highlighting) ----------------
+st.subheader("🎨 4. Spalten markieren")
+
+mark_cols = st.multiselect(
+    "Welche Spalten im gewählten Bereich gelb markieren?",
+    options=df_step3.columns.tolist()
+)
+
+def highlight_columns(df_style, cols):
+    styles = pd.DataFrame("", index=df_style.index, columns=df_style.columns)
+    for c in cols:
+        styles[c] = "background-color: #FFFF00"
+    return styles
+
+if mark_cols:
+    styled_df = df_step3.style.apply(
+        highlight_columns,
+        cols=mark_cols,
+        axis=None
     )
-
-    def highlight_columns(df, cols):
-        styles = pd.DataFrame("", index=df.index, columns=df.columns)
-        for c in cols:
-            styles[c] = "background-color: yellow"
-        return styles
-
-    if mark_cols:
-        styled_df = df_display.style.apply(
-            highlight_columns,
-            cols=mark_cols,
-            axis=None
-        )
-        
-        # تنسيق الأرقام
-        numeric_cols = df_display.select_dtypes(include=['number']).columns
-        if len(numeric_cols) > 0:
-            styled_df = styled_df.format({col: "{:.0f}" for col in numeric_cols})
-        
-        st.dataframe(
-            styled_df,
-            use_container_width=True
-        )
-        df_clean_data = df_display[mark_cols]
-
-# ---------------- التنزيل ----------------
+    
+    # تنسيق الأرقام (بدون فاصلة عشرية)
+    num_cols = df_step3.select_dtypes(include=['number']).columns
+    if len(num_cols) > 0:
+        styled_df = styled_df.format({col: "{:.0f}" for col in num_cols})
+    
+    st.dataframe(styled_df, use_container_width=True)
+    # هذا المتغير النهائي الذي سيستخدم في التنزيل
+    df_final_to_download = df_step3 
+else:
+    st.dataframe(df_step3, use_container_width=True)
+    df_final_to_download = df_step3
 st.subheader("💾 Download Optionen")
+buffer = io.BytesIO()
 
 # إنشاء Excel مع البيانات المفلترة
-buffer = io.BytesIO()
+df_to_save = styled_df if ('styled_df' in locals() and styled_df is not None) else df_step3
+
 with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-    # حفظ البيانات المفلترة حسب seg_kgm
-    if 'filtered_df' in locals() and not filtered_df.empty:
-        filtered_df.to_excel(writer, index=False, sheet_name='Gefiltert_seg_kgm')
+    # 1. حفظ البيانات النهائية (المفلترة بالأسطر والأعمدة والمميزة بالألوان)
+    if 'df_to_save' in locals():
+        df_to_save.to_excel(writer, index=False, sheet_name='Final_Selection')
     
-    # حفظ البيانات مع الأعمدة المختارة
-    if 'df_display' in locals():
-        df_display.to_excel(writer, index=False, sheet_name='Ausgewaehlte_Spalten')
-    
-    # حفظ البيانات الأصلية
-    df.to_excel(writer, index=False, sheet_name='Original_Daten')
+    # 2. حفظ البيانات الأصلية كاملة كمرجع
+    df.to_excel(writer, index=False, sheet_name='Original_Full_Data')
 
 excel_data = buffer.getvalue()
 
@@ -177,20 +174,20 @@ with col1:
     st.download_button(
         label="📥 Excel herunterladen",
         data=excel_data,
-        file_name="gefilterte_daten.xlsx",
+        file_name=f"Report_{sheet_name}_{datetime.datetime.now().strftime('%Y%m%d')}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
 with col2:
-    if 'df_display' in locals():
-        csv_data = df_display.to_csv(index=False, sep=";", encoding="utf-8-sig")
+    # لتنزيل CSV، نستخدم دائماً النسخة غير المنسقة (نصوص وأرقام فقط)
+    if 'df_step3' in locals():
+        csv_data = df_step3.to_csv(index=False, sep=";", encoding="utf-8-sig")
         st.download_button(
             label="📥 CSV herunterladen",
             data=csv_data,
-            file_name="gefilterte_daten.csv",
+            file_name=f"Report_{sheet_name}.csv",
             mime="text/csv"
         )
-
 # ---------------- القسم الأخير للملاحظات ----------------
 st.divider()
 st.subheader("📝 Notizen für Suzzi")
@@ -214,7 +211,7 @@ if st.button("💾 Speichern"):
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "selected_seg_kgm_values": selected_seg_values if 'selected_seg_values' in locals() else [],
                 "marked_columns": mark_cols if 'mark_cols' in locals() else [],
-                "selected_columns": cols_to_show if 'cols_to_show' in locals() else [],
+                "selected_columns": selected_seg_values if 'cols_to_show' in locals() else [],
                 "note": notes
             }
 
