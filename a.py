@@ -127,7 +127,7 @@ if 'seg_kgm' in df.columns:
     else:
         df_filtered_rows = df.copy()
     
-    st.info(f"📈 تم العثور على {len(df_filtered_rows)} سطر بناءً على فلترة القيم.")
+    st.info(f"📈 es wurde die Zeilen   {len(df_filtered_rows)}  gefunden   .")
 else:
     st.error("العمود 'seg_kgm' غير موجود.")
     df_filtered_rows = df.copy()
@@ -135,7 +135,6 @@ else:
 # ---------------- 2. اختيار الأعمدة ----------------
 st.subheader("📋 2. Spalten auswählen")
 
-# نتيح للعميل اختيار الأعمدة التي يريد الإبقاء عليها
 all_columns = df_filtered_rows.columns.tolist()
 selected_cols = st.multiselect(
     "Welche Spalten möchtest du behalten?",
@@ -144,14 +143,15 @@ selected_cols = st.multiselect(
 )
 
 if not selected_cols:
-    st.warning("الرجاء اختيار عمود واحد على الأقل.")
+    st.warning("    Mindestens eine Zeile wählen .")
     df_step2 = df_filtered_rows.copy()
 else:
     df_step2 = df_filtered_rows[selected_cols].copy()
 
 # ---------------- 3. اختيار أسطر محددة (Interaktive Auswahl) ----------------
 st.subheader("🖱️ 3. Spezifische Zeilen auswählen")
-st.write("قم بتحديد الأسطر التي تريد العمل عليها من الجدول أدناه:")
+st.write("Wähle die Zeielen Aus")
+#st.write("قم بتحديد الأسطر التي تريد العمل عليها من الجدول أدناه:")
 
 # عرض الجدول مع خاصية التحديد
 event = st.dataframe(
@@ -165,10 +165,10 @@ event = st.dataframe(
 selected_row_indices = event.selection.rows
 if selected_row_indices:
     df_step3 = df_step2.iloc[selected_row_indices].copy()
-    st.success(f"✅ تم اختيار {len(df_step3)} أسطر يدوياً.")
+    st.success(f"✅  Zeilen wurden ausgewählt {len(df_step3)}  .")
 else:
     df_step3 = df_step2.copy()
-    st.info("لم يتم اختيار أسطر محددة، سيتم استخدام كامل الجدول المفلتر.")
+    #st.info("لم يتم اختيار أسطر محددة، سيتم استخدام كامل الجدول المفلتر.")
 
 # ---------------- 4. تمييز الأعمدة (Highlighting) ----------------
 st.subheader("🎨 4. Spalten markieren")
@@ -269,7 +269,7 @@ if st.button("💾 Speichern"):
 
             send_telegram_alert_simple(notes)
 
-            st.success("✅ تم حفظ التعليم والملاحظة بنجاح وإرسال إشعار فوري!")
+            st.success("✅ Es wurde gespeichert")
 
         except Exception as e:
             st.error(f"❌ Error: {e}")
