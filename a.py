@@ -41,74 +41,62 @@ def send_telegram_alert_simple(note_text,spalten):
     except Exception as e:
         st.error(f"Telegram Fehler: {e}")
         return False
-def send_whatsapp_alert_simple(note_text, spalten):
+def send_detailed_whatsapp_alert(note_text):
+    """إرسال إشعار واتساب مع تفاصيل أكثر"""
     try:
-        # تأكد من أن القيم ليست فارغة
-        instance_id = st.secrets.get("WHATSAPP_INSTANCE_ID", "").strip()
-        token = st.secrets.get("WHATSAPP_TOKEN", "").strip()
-        to_phone = st.secrets.get("WHATSAPP_TO_PHONE", "").strip()
+        api_url = "https://7103.api.greenapi.com"
+        instance_id = "7103497270"
+        token = "a165dd1903374a7d99ca51ee4b1aa8d09a7de580a3b747a82"
+        to_phone = "491625167221"
         
-        # تحقق من القيم
-        if not instance_id or not token or not to_phone:
-            st.error("WhatsApp API credentials are missing!")
-            return False
-        
-        st.info(f"Instance ID: {instance_id[:5]}...")
-        st.info(f"Token: {token[:10]}...")
-        st.info(f"Phone: {to_phone}")
-        
-        message = (
-            f"🔔 *Neue Notiz von Gemini Dashboard*\n\n"
-            f"*Notiz:*\n{note_text}\n\n"
-            f"*Details:*\n"
-            f"• Sheet: {sheet_name}\n"
-            f"• Zeit: {datetime.datetime.now().strftime('%H:%M %d.%m.%Y')}\n"
-            f"• Diese Spalten wurden {spalten} markiert"
-        )
+        # رسالة مفصلة
+        message = f"""🚨 *ALERT: Neue Dashboard Notiz*
 
-        # بناء URL حسب وثائق Green-API
-        # الطريقة 1: مع instance قبل ID
-        url = f"https://api.green-api.com/instance{instance_id}/sendMessage/{token}"
-        
-        st.info(f"API URL: {url}")
+📋 *Beschreibung:*
+{note_text}
+
+📅 *Zeitpunkt:* {datetime.datetime.now().strftime('%d.%m.%Y %H:%M')}
+📊 *System:* Gemini Analytics Dashboard
+👤 *Benutzer:* Dashboard User
+
+ℹ️ *Hinweis:* Bitte im Dashboard überprüfen."""
+
+        # بناء URL
+        url = f"{api_url}/waInstance{instance_id}/sendMessage/{token}"
         
         payload = {
             "chatId": f"{to_phone}@c.us",
             "message": message
         }
         
-        st.info(f"Payload: {json.dumps(payload, ensure_ascii=False)}")
-
         headers = {
             "Content-Type": "application/json"
         }
-
-        # إرسال الطلب
+        
+        # إرسال
         response = requests.post(url, json=payload, headers=headers, timeout=30)
         
-        # تسجيل التفاصيل
-        st.info(f"Status Code: {response.status_code}")
-        st.info(f"Response Headers: {dict(response.headers)}")
-        st.info(f"Response Text: {response.text[:200]}")
-        
         if response.status_code == 200:
-            st.success("✅ WhatsApp Nachricht erfolgreich gesendet!")
+            data = response.json()
+            st.success(f"✅ WhatsApp gesendet! ID: {data.get('idMessage', 'N/A')}")
             return True
         elif response.status_code == 403:
-            st.error("❌ 403 Forbidden - Überprüfe deine API Credentials!")
-            st.error("1. Prüfe ob Instance aktiviert ist")
-            st.error("2. Prüfe ob Token korrekt ist")
-            st.error("3. Prüfe ob Instance ID korrekt ist")
+            st.error("❌ 403 Forbidden - Instance nicht autorisiert oder Token falsch")
+            st.info("💡 Gehe zu https://console.green-api.com und authorisiere die Instance")
             return False
         else:
-            st.error(f"❌ Fehler {response.status_code}: {response.text}")
+            st.error(f"❌ API Fehler: {response.status_code}")
+            st.error(f"Details: {response.text}")
             return False
-
-    except requests.exceptions.RequestException as e:
-        st.error(f"❌ Network Error: {e}")
+            
+    except requests.exceptions.Timeout:
+        st.error("⏱️ Timeout: Server antwortet nicht")
+        return False
+    except requests.exceptions.ConnectionError:
+        st.error("🌐 Verbindungsfehler")
         return False
     except Exception as e:
-        st.error(f"❌ Unexpected Error: {e}")
+        st.error(f"❌ Unerwarteter Fehler: {e}")
         return False
 # def send_email_notification(note_text):
 #     sender_email = st.secrets["EMAIL_USER"]
@@ -338,7 +326,7 @@ if st.button("💾 Speichern"):
                 repo.create_file(FILE_PATH, "Create column markings", content, branch=BRANCH)
 
             send_telegram_alert_simple(notes,col1)
-            send_whatsapp_alert_simple(notes,col1)
+            send_detailed_whatsapp_alert(notes)
 
             st.success("✅ Es wurde gespeichert")
 
