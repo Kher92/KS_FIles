@@ -43,11 +43,20 @@ def send_telegram_alert_simple(note_text,spalten):
         return False
 def send_whatsapp_alert_simple(note_text, spalten):
     try:
-        # الوصول إلى القيم من st.secrets مباشرة
-        instance_id = st.secrets["WHATSAPP_INSTANCE_ID"]
-        token = st.secrets["WHATSAPP_TOKEN"]
-        to_phone = st.secrets["WHATSAPP_TO_PHONE"]
-
+        # تأكد من أن القيم ليست فارغة
+        instance_id = st.secrets.get("WHATSAPP_INSTANCE_ID", "").strip()
+        token = st.secrets.get("WHATSAPP_TOKEN", "").strip()
+        to_phone = st.secrets.get("WHATSAPP_TO_PHONE", "").strip()
+        
+        # تحقق من القيم
+        if not instance_id or not token or not to_phone:
+            st.error("WhatsApp API credentials are missing!")
+            return False
+        
+        st.info(f"Instance ID: {instance_id[:5]}...")
+        st.info(f"Token: {token[:10]}...")
+        st.info(f"Phone: {to_phone}")
+        
         message = (
             f"🔔 *Neue Notiz von Gemini Dashboard*\n\n"
             f"*Notiz:*\n{note_text}\n\n"
@@ -57,40 +66,50 @@ def send_whatsapp_alert_simple(note_text, spalten):
             f"• Diese Spalten wurden {spalten} markiert"
         )
 
-        # تصحيح بناء URL - أضف '/' بعد النطاق
+        # بناء URL حسب وثائق Green-API
+        # الطريقة 1: مع instance قبل ID
         url = f"https://api.green-api.com/instance{instance_id}/sendMessage/{token}"
-        # أو إذا كان instance_id لا يحتاج إلى كلمة "instance" قبلها:
-        # url = f"https://api.green-api.com/{instance_id}/sendMessage/{token}"
-
+        
+        st.info(f"API URL: {url}")
+        
         payload = {
-            "chatId": f"{to_phone}@c.us",  # صيغة Green-API
+            "chatId": f"{to_phone}@c.us",
             "message": message
         }
+        
+        st.info(f"Payload: {json.dumps(payload, ensure_ascii=False)}")
 
         headers = {
             "Content-Type": "application/json"
         }
 
-        response = requests.post(url, json=payload, headers=headers)
+        # إرسال الطلب
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
         
-        # تسجيل الاستجابة للتصحيح
-        print(f"URL: {url}")
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.text}")
-
+        # تسجيل التفاصيل
+        st.info(f"Status Code: {response.status_code}")
+        st.info(f"Response Headers: {dict(response.headers)}")
+        st.info(f"Response Text: {response.text[:200]}")
+        
         if response.status_code == 200:
-            st.success("WhatsApp Nachricht erfolgreich gesendet!")
+            st.success("✅ WhatsApp Nachricht erfolgreich gesendet!")
             return True
+        elif response.status_code == 403:
+            st.error("❌ 403 Forbidden - Überprüfe deine API Credentials!")
+            st.error("1. Prüfe ob Instance aktiviert ist")
+            st.error("2. Prüfe ob Token korrekt ist")
+            st.error("3. Prüfe ob Instance ID korrekt ist")
+            return False
         else:
-            st.error(f"Fehler beim Senden: {response.status_code} - {response.text}")
+            st.error(f"❌ Fehler {response.status_code}: {response.text}")
             return False
 
+    except requests.exceptions.RequestException as e:
+        st.error(f"❌ Network Error: {e}")
+        return False
     except Exception as e:
-        st.error(f"WhatsApp Fehler: {e}")
-        # طباعة تفاصيل الخطأ للمساعدة في التصحيح
-        import traceback
-        st.error(f"Traceback: {traceback.format_exc()}")
-        return False  
+        st.error(f"❌ Unexpected Error: {e}")
+        return False
 # def send_email_notification(note_text):
 #     sender_email = st.secrets["EMAIL_USER"]
 #     receiver_email = st.secrets["EMAIL_RECEIVER"]
