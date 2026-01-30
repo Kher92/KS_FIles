@@ -56,7 +56,7 @@ def send_detailed_whatsapp_alert(note_text):
         instance_id = "7103497270"
         token = "a165dd1903374a7d99ca51ee4b1aa8d09a7de580a3b7447a82"
         to_phone = "491625167221"
-        WHATSAPP_TO_GRUPPE ='120363422289516075@g.us'
+        WHATSAPP_TO_GRUPPE ='120363421438638077@g.us'
 
         message = f"""🚨 *ALERT*
 
