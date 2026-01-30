@@ -8,7 +8,7 @@ import smtplib
 from email.mime.text import MIMEText
 import requests
 
-def send_telegram_alert_simple(note_text):
+def send_telegram_alert_simple(note_text,spalten):
     """
     نسخة مبسطة لإرسال إشعار Telegram
     """
@@ -23,8 +23,9 @@ def send_telegram_alert_simple(note_text):
             f"**Details:**\n"
             f"• Sheet: {sheet_name}\n"
             f"• Zeit: {datetime.datetime.now().strftime('%H:%M %d.%m.%Y')}\n"
-            f"• Benutzer: Kher\n\n"
+            f"• Benutzer: \n\n"
             f"ℹ️ _Diese Notiz wurde im Dashboard gespeichert_"
+            f"Diese Spalten wurden {spalten} markiert"
         )
         
         url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -40,6 +41,36 @@ def send_telegram_alert_simple(note_text):
     except Exception as e:
         st.error(f"Telegram Fehler: {e}")
         return False
+def send_whatsapp_alert_simple(note_text, spalten):
+    try:
+        # الوصول إلى القيم من st.secrets مباشرة
+        instance_id = st.secrets["WHATSAPP_INSTANCE_ID"]
+        token = st.secrets["WHATSAPP_TOKEN"]
+        to_phone = st.secrets["WHATSAPP_TO_PHONE"]
+
+        message = (
+            f"🔔 *Neue Notiz von Gemini Dashboard*\n\n"
+            f"*Notiz:*\n{note_text}\n\n"
+            f"*Details:*\n"
+            f"• Sheet: {sheet_name}\n"
+            f"• Zeit: {datetime.datetime.now().strftime('%H:%M %d.%m.%Y')}\n"
+            f"• Diese Spalten wurden {spalten} markiert"
+        )
+
+        url = f"https://api.green-api.com{instance_id}/sendMessage/{token}"
+
+        payload = {
+            "chatId": f"{to_phone}@c.us", # صيغة Green-API
+            "message": message
+        }
+
+        response = requests.post(url, json=payload) # Green-API تستخدم json
+
+        return response.status_code == 200
+
+    except Exception as e:
+        st.error(f"WhatsApp Fehler: {e}")
+        return False    
 # def send_email_notification(note_text):
 #     sender_email = st.secrets["EMAIL_USER"]
 #     receiver_email = st.secrets["EMAIL_RECEIVER"]
@@ -267,7 +298,8 @@ if st.button("💾 Speichern"):
             except:
                 repo.create_file(FILE_PATH, "Create column markings", content, branch=BRANCH)
 
-            send_telegram_alert_simple(notes)
+            send_telegram_alert_simple(notes,col1)
+            send_whatsapp_alert_simple(notes,col1)
 
             st.success("✅ Es wurde gespeichert")
 
