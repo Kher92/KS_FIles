@@ -8,45 +8,55 @@ import smtplib
 from email.mime.text import MIMEText
 import requests
 
-def send_telegram_alert_simple(note_text,spalten):
+def send_telegram_alert_simple(note_text, spalten, sheet_name="Unbekannt"):
     """
-    نسخة مبسطة لإرسال إشعار Telegram
+    إرسال إشعار Telegram مبسّط وواضح
     """
     try:
         token = st.secrets["TELEGRAM_TOKEN"]
         chat_id = st.secrets["TELEGRAM_CHAT_ID"]
-        
-        # رسالة بسيطة مع معلومات أساسية
+
+        # تأمين spalten
+        if isinstance(spalten, (list, tuple, set)):
+            spalten_text = ", ".join(map(str, spalten))
+        else:
+            spalten_text = str(spalten)
+
         message = (
-            f"🔔 **Neue Notiz von Gemini Dashboard**\n\n"
-            f"**Notiz:**\n{note_text}\n\n"
-            f"**Details:**\n"
+            "🔔 Neue Notiz von Gemini Dashboard\n\n"
+            f"📝 Notiz:\n{note_text}\n\n"
+            "📊 Details:\n"
             f"• Sheet: {sheet_name}\n"
-            f"• Zeit: {datetime.datetime.now().strftime('%H:%M %d.%m.%Y')}\n"
-            f"• Benutzer: \n\n"
-            f"ℹ️ _Diese Notiz wurde im Dashboard gespeichert_"
-            f"Diese Spalten wurden {spalten} markiert"
+            f"• Spalten: {spalten_text}\n"
+            f"• Zeit: {datetime.datetime.now().strftime('%H:%M %d.%m.%Y')}\n\n"
+            "ℹ️ Diese Notiz wurde im Dashboard gespeichert"
         )
-        
+
         url = f"https://api.telegram.org/bot{token}/sendMessage"
-        
-        response = requests.post(url, json={
-            "chat_id": chat_id,
-            "text": message,
-            "parse_mode": "Markdown"
-        })
-        
+
+        response = requests.post(
+            url,
+            json={
+                "chat_id": chat_id,
+                "text": message,
+                "disable_notification": False  # 🔔 صوت
+            },
+            timeout=10
+        )
+
         return response.status_code == 200
-        
+
     except Exception as e:
         st.error(f"Telegram Fehler: {e}")
         return False
+
 def send_detailed_whatsapp_alert(note_text):
     try:
         api_url = "https://7103.api.greenapi.com"
         instance_id = "7103497270"
         token = "a165dd1903374a7d99ca51ee4b1aa8d09a7de580a3b7447a82"
         to_phone = "491625167221"
+        WHATSAPP_TO_GRUPPE ='120363422289516075@g.us'
 
         message = f"""🚨 *ALERT*
 
@@ -58,7 +68,7 @@ def send_detailed_whatsapp_alert(note_text):
         url = f"{api_url}/waInstance{instance_id}/sendMessage/{token}"
 
         payload = {
-            "chatId": f"{to_phone}@c.us",
+            "chatId": f"{WHATSAPP_TO_GRUPPE}@g.us",
             "message": message
         }
 
