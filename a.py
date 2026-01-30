@@ -42,61 +42,33 @@ def send_telegram_alert_simple(note_text,spalten):
         st.error(f"Telegram Fehler: {e}")
         return False
 def send_detailed_whatsapp_alert(note_text):
-    """إرسال إشعار واتساب مع تفاصيل أكثر"""
     try:
         api_url = "https://7103.api.greenapi.com"
         instance_id = "7103497270"
-        token = "a165dd1903374a7d99ca51ee4b1aa8d09a7de580a3b747a82"
+        token = "a165dd1903374a7d99ca51ee4b1aa8d09a7de580a3b7447a82"
         to_phone = "491625167221"
-        
-        # رسالة مفصلة
-        message = f"""🚨 *ALERT: Neue Dashboard Notiz*
 
-📋 *Beschreibung:*
+        message = f"""🚨 *ALERT*
+
 {note_text}
 
-📅 *Zeitpunkt:* {datetime.datetime.now().strftime('%d.%m.%Y %H:%M')}
-📊 *System:* Gemini Analytics Dashboard
-👤 *Benutzer:* Dashboard User
+⏰ {datetime.datetime.now().strftime('%d.%m.%Y %H:%M')}
+"""
 
-ℹ️ *Hinweis:* Bitte im Dashboard überprüfen."""
-
-        # بناء URL
         url = f"{api_url}/waInstance{instance_id}/sendMessage/{token}"
-        
+
         payload = {
             "chatId": f"{to_phone}@c.us",
             "message": message
         }
-        
-        headers = {
-            "Content-Type": "application/json"
-        }
-        
-        # إرسال
-        response = requests.post(url, json=payload, headers=headers, timeout=30)
-        
-        if response.status_code == 200:
-            data = response.json()
-            st.success(f"✅ WhatsApp gesendet! ID: {data.get('idMessage', 'N/A')}")
-            return True
-        elif response.status_code == 403:
-            st.error("❌ 403 Forbidden - Instance nicht autorisiert oder Token falsch")
-            st.info("💡 Gehe zu https://console.green-api.com und authorisiere die Instance")
-            return False
-        else:
-            st.error(f"❌ API Fehler: {response.status_code}")
-            st.error(f"Details: {response.text}")
-            return False
-            
-    except requests.exceptions.Timeout:
-        st.error("⏱️ Timeout: Server antwortet nicht")
-        return False
-    except requests.exceptions.ConnectionError:
-        st.error("🌐 Verbindungsfehler")
-        return False
+
+        response = requests.post(url, json=payload, timeout=30)
+
+        print(response.status_code, response.text)
+        return response.status_code == 200
+
     except Exception as e:
-        st.error(f"❌ Unerwarteter Fehler: {e}")
+        print("ERROR:", e)
         return False
 # def send_email_notification(note_text):
 #     sender_email = st.secrets["EMAIL_USER"]
