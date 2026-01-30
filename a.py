@@ -68,7 +68,7 @@ def send_detailed_whatsapp_alert(note_text):
         url = f"{api_url}/waInstance{instance_id}/sendMessage/{token}"
 
         payload = {
-            "chatId": f"{WHATSAPP_TO_GRUPPE}@g.us",
+            "chatId": f"{WHATSAPP_TO_GRUPPE}",
             "message": message
         }
 
