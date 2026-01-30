@@ -57,20 +57,40 @@ def send_whatsapp_alert_simple(note_text, spalten):
             f"• Diese Spalten wurden {spalten} markiert"
         )
 
-        url = f"https://api.green-api.com{instance_id}/sendMessage/{token}"
+        # تصحيح بناء URL - أضف '/' بعد النطاق
+        url = f"https://api.green-api.com/instance{instance_id}/sendMessage/{token}"
+        # أو إذا كان instance_id لا يحتاج إلى كلمة "instance" قبلها:
+        # url = f"https://api.green-api.com/{instance_id}/sendMessage/{token}"
 
         payload = {
-            "chatId": f"{to_phone}@c.us", # صيغة Green-API
+            "chatId": f"{to_phone}@c.us",  # صيغة Green-API
             "message": message
         }
 
-        response = requests.post(url, json=payload) # Green-API تستخدم json
+        headers = {
+            "Content-Type": "application/json"
+        }
 
-        return response.status_code == 200
+        response = requests.post(url, json=payload, headers=headers)
+        
+        # تسجيل الاستجابة للتصحيح
+        print(f"URL: {url}")
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.text}")
+
+        if response.status_code == 200:
+            st.success("WhatsApp Nachricht erfolgreich gesendet!")
+            return True
+        else:
+            st.error(f"Fehler beim Senden: {response.status_code} - {response.text}")
+            return False
 
     except Exception as e:
         st.error(f"WhatsApp Fehler: {e}")
-        return False    
+        # طباعة تفاصيل الخطأ للمساعدة في التصحيح
+        import traceback
+        st.error(f"Traceback: {traceback.format_exc()}")
+        return False  
 # def send_email_notification(note_text):
 #     sender_email = st.secrets["EMAIL_USER"]
 #     receiver_email = st.secrets["EMAIL_RECEIVER"]
