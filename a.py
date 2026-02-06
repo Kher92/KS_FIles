@@ -153,7 +153,6 @@ st.dataframe(df)
 st.subheader("🔍 Filter Zeilen nach seg_kgm")
 
 if 'seg_kgm' in df.columns:
-    # تصحيح: جلب القيم الفريدة من العمود وليس أسماء الأعمدة
     available_seg_values = df   
     
     selected_seg_values = st.multiselect(

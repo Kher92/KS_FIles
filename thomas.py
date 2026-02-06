@@ -44,37 +44,105 @@ def load_data():
 
 
 df = load_data()
+st.dataframe(df)
 print(df.columns)
+if 'seg_kgm' in df.columns:
+    available_seg_values = df['seg_kgm'].unique()
+    
+    selected_seg_values = st.multiselect(
+        "Welche Segment-Werte (seg_kgm) filtern?",
+        options=available_seg_values
+    )
 
 
-mask = (df['old'].isna()) & (df['kauf_2120'] == 1) & (df['gendertypeid'] == 2)
-df_filtered = df[mask].copy()
-print(f"df_filtered ich bin hier \n{df_filtered}\n")
-print("__________"*5)
-print(f"the length of df_filtterd is {len(df_filtered)}  ")
-df_filtered = df_filtered[df_filtered['ealter'] == '60-75']
+    if selected_seg_values:
+        df_filtered_rows = df[df['seg_kgm'].isin(selected_seg_values)].copy()
+    else:
+        df_filtered_rows = df.copy()
+    
+    st.info(f"📈 es wurde die Zeilen   {len(df_filtered_rows)}  gefunden   .")
+else:
+    st.error("العمود 'seg_kgm' غير موجود.")
+    df_filtered_rows = df.copy()
 
-conditions = {
-    'mb012_p_count': df_filtered['MB012_p'] == 1,
-    'mb012_count':   df_filtered['MB012'] == 1,
-    'mb024_p_count': df_filtered['MB024_p'] == 1,
-    'mb024_count':   df_filtered['MB024'] == 1,
-    'mb024_p_rest':  df_filtered['MB024_p'].isna(),
-    'mb024_rest':    df_filtered['MB024'].isna()
-}
 
-# إضافة أعمدة مؤقتة (True/False) لكل شرط للعد
-for col_name, condition in conditions.items():
-    df_filtered[col_name] = condition
 
-df_pivot = pd.pivot_table(
-    df_filtered,
-    values=['mb012_p_count', 'mb012_count', 'mb024_p_count', 'mb024_count'],
-    index=['seg_kgm'],
-    columns=['ealter'], # هنا سيكون [60-80]
-    aggfunc='sum',      # جمع القيم True (التي تعادل 1)
-    fill_value=0
+
+st.subheader("📋 2. Spalten auswählen")
+
+all_columns = df_filtered_rows.columns.tolist()
+selected_cols = st.multiselect(
+    "Welche Spalten möchtest du behalten?",
+    options=all_columns,
+    default=all_columns[:5] if len(all_columns) > 5 else all_columns # افتراضياً أول 5 أعمدة
 )
 
-# ترتيب النتائج حسب seg_kgm كما في SQL
-df_pivot = df_pivot.sort_index()
+if not selected_cols:
+    st.warning("    Mindestens eine Zeile wählen .")
+    df_step2 = df_filtered_rows.copy()
+else:
+    df_step2 = df_filtered_rows[selected_cols].copy()
+
+
+st.subheader("🖱️ 3. Spezifische Zeilen auswählen")
+st.write("Wähle die Zeielen Aus")
+#st.write("قم بتحديد الأسطر التي تريد العمل عليها من الجدول أدناه:")
+
+# عرض الجدول مع خاصية التحديد
+event = st.dataframe(
+    df_step2,
+    use_container_width=True,
+    on_select="rerun", # تفعيل خاصية التحديد التفاعلي
+    selection_mode="multi-row"
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# df_long = df.melt(
+#     id_vars=['seg_kgm', 'score_kgm'], 
+#     value_vars=['MB012', 'MB024', 'MB012_p', 'MB024_p'],
+#     var_name='Spalten_Name', 
+#     value_name='Inhalt'       
+# )
+
+# pivot = pd.pivot_table(
+#     df_long,
+#     values='score_kgm',
+#     index='seg_kgm',
+#     columns='Spalten_Name',
+#     aggfunc='sum',
+#     fill_value=0
+# )
+# print(pivot)
+# st.dataframe(pivot)
+
+# import pandas as pd
+# import numpy as np
+
+# df = load_data() # Dein geladenes DataFrame
+
